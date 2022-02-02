@@ -1,0 +1,413 @@
+
+
+h3 {
+    color: #ffffff;
+    text-align: center;
+}
+.heading{
+    color: #ffffff;
+    text-align: center;
+}
+
+.saved_card_heading{
+    color: #ffffff;
+    text-align: left;
+}
+
+.mb-modal-body					{border-radius: 4px 4px 0px 0px;font-size: 18px;  padding-bottom:10px;}
+.mb-modal-body-desc				{padding:4px 20px 10px !important; text-align:center; font-size:15px;}
+.modal-footer					{padding:0 20px !important; margin:0 !important; border:0 !important; background-color:#01243b;}
+.modal-dialog					{margin-top:56px !important;}
+.mb-delete-btncontainer			{width: 50%; float: left; text-align:center; margin: 8px 0 !important;}
+.mb-delete-btncontainer.bordered{border-left: 1px solid #309AFC !important; }
+.mb-progress-btn				{background-color:white !important; border:0 !important; border-radius:0 !important; padding: 2px 0 !important;}
+.mb-okbutton					{color:#000 !important;}
+.mb-cancelbutton				{color:#F0F0F0 !important;}
+.mb-dlt-progress				{width: 100%;height: 4px;}
+.mb-dlt-progress-wrap			{background: #309AFC;margin: 0; margin-bottom: 14px; overflow: hidden;position: relative;border: 20px solid;border-top: 0px;border-bottom: 0px;border-color: white;}
+.mb-dlt-progress-bar			{background: #ddd;left: 0;position: absolute;top: 0;}
+.mb-popup-backdrop				{height:100%; width:100%; left:0; right:0; top:0; bottom:0; position:fixed; background-color:rgba(0,0,0,0.6); z-index:20000;}
+.mb-popup-wrapper				{max-width: 800px; width: 94%;margin: auto; top:10px; position:relative; background-color:#242852; }
+.mb-popup-body					{position:relative; padding: 2px 0px 4px 0px;}
+.mb-popup-footer				{padding:0 0px !important; margin:0 !important; border:0 !important; background-color:#ddd; height:47px;}
+
+.mb-leadeditbtn					{width: 100%; display:inline-block; text-align:center; padding: 15px 0 !important;}
+
+
+
+.form {
+    width: 250px;
+    margin: 0 auto;
+}
+.form .half input {
+    width: 115px;
+    float: left;
+}
+.form .half input:first-child {
+    margin-right: 20px;
+}
+.form input, form button {
+    box-sizing: border-box;
+    display: block;
+    float: left;
+    width: 100%;
+    padding: 2px;
+    font-size: 12px;
+    margin-bottom: 10px;
+    outline: none;
+    border: none;
+}
+.form input {
+    color: #1C1D21;
+}
+.form button {
+    color: #1C1D21;
+    background: #EEEFF7;
+    font-weight: bold;
+}
+
+
+.container {
+    padding-left: 50px;
+    align-items: center;
+    justify-content: center;
+    height: 90vh;
+    flex-direction: column;
+}
+.suc_container{
+    padding-left: 50px;
+    align-items: center;
+    justify-content: center;
+    height: 30vh;
+    flex-direction: column;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-family: "Lato", sans-serif;
+}
+
+.circle_card {
+    margin-bottom: 30px;
+    width: 350px;
+    float: left;
+}
+.saved_card {
+    margin-bottom: 30px;
+    width: 100%;
+    float: left;
+    padding-right: 100px;
+}
+.card_right {
+    border-left: 1.2px solid #292C58;
+}
+.circle_card .msg {
+    font-size: 10px !important;
+    width: 120px !important;
+}
+.circle_card .row {
+    height: 60px;
+    width: 100%;
+    border-bottom: 1.2px solid #292C58;
+}
+.saved_card .row {
+    height: 60px;
+    width: 100%;
+    border-bottom: 1.2px solid #292C58;
+}
+.circle_card .row:last-child {
+    border: none;
+}
+.circle_top{
+    margin-top: 25px;
+}
+.circle_card .details {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+.circle_card .paypal, .card .credit {
+    background-color: #1E2148;
+}
+.circle_card .cardholder, .card .number, .card .details {
+    background-color: #242852;
+    margin-top: 5px;
+}
+
+
+.paypal .right img, .credit .right img {
+    width: 42px;
+    height: 30px;
+    margin-left: 10px;
+}
+
+input[type=radio]:checked ~ .radio {
+    border: 3px solid #90E1E3;
+    background-color: #18C2C0;
+}
+input[type=radio]:checked ~ .radio::before {
+    background-color: #fff;
+}
+
+.cardholder .info, .number .info {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 40px;
+}
+.cardholder .info label, .number .info label {
+    display: inline-block;
+    letter-spacing: 0.5px;
+    color: #8F92C3;
+    width: 100px;
+    font-size: 13px;
+}
+.cardholder .info input, .number .info input {
+    display: inline-block;
+    max-width: 300px;
+    width: 300px;
+    background-color: #222;
+    font-family: "Source Code Pro";
+    border: none;
+    outline: none;
+    color: white;
+    padding: 7px;
+    padding-bottom: 1px;
+}
+.saved_card .savedcardholder .info input, .number .info input {
+    display: inline-block;
+    max-width: 100%;
+    width: 300px;
+    background-color: #222;
+    font-family: "Source Code Pro";
+    border: none;
+    outline: none;
+    color: white;
+    padding: 7px;
+    font-size: 20px;
+}
+.savedcardholder .info label, .number .info label {
+    display: inline-block;
+    letter-spacing: 0.5px;
+    color: #8F92C3;
+    width: 100px;
+    font-size: 15px;
+}
+.inline_img{
+    width: 20px;
+}
+.saved_card .card_list{
+    white-space:nowrap;
+    color: #ffffff;
+    font-size: 20px;
+}
+.card_info{
+    padding: 10px;
+    color: #ffffff;
+}
+.card_rows{
+    background-color: #222;
+}
+.table_cls{
+    border-spacing: 0;
+    width: 100%;
+}
+.column_spacing{
+    width: 50px;
+}
+.row_padding{
+    padding: 10px;
+}
+.first_column{
+    width: 65%;
+    text-align: left;
+}
+.second_column{
+    width: 8%;
+}
+.third_column{
+    width: 15%;
+}
+.fourth_column{
+    width: 12%;
+}
+.cardholder .info input::-moz-placeholder, .number .info input::-moz-placeholder {
+    font-family: "Source Code Pro";
+    color: #ffffff;
+}
+.cardholder .info input:-ms-input-placeholder, .number .info input:-ms-input-placeholder {
+    font-family: "Source Code Pro";
+    color: #ffffff;
+}
+.cardholder .info input::placeholder, .number .info input::placeholder {
+    font-family: "Source Code Pro";
+    color: #ffffff;
+}
+
+.savedcardholder .info input::-moz-placeholder, .number .info input::-moz-placeholder {
+    font-family: "Source Code Pro";
+    color: #ffffff;
+    font-size: 20px;
+}
+.savedcardholder .info input:-ms-input-placeholder, .number .info input:-ms-input-placeholder {
+    font-family: "Source Code Pro";
+    color: #ffffff;
+    font-size: 20px;
+}
+.savedcardholder .info input::placeholder, .number .info input::placeholder {
+    font-family: "Source Code Pro";
+    color: #ffffff;
+    font-size: 20px;
+}
+
+
+#cardnumber::-moz-placeholder {
+    letter-spacing: 2px;
+}
+
+#cardnumber:-ms-input-placeholder {
+    letter-spacing: 2px;
+}
+
+#cardnumber, #cardnumber::placeholder {
+    letter-spacing: 2px;
+}
+
+.details .left, .details .right {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.details .left {
+    float: left;
+    padding-left: 40px;
+    width: 50%;
+}
+.details .left label {
+    letter-spacing: 0.5px;
+    color: #8F92C3;
+    width: 100px;
+    margin-right: 20px;
+    font-size: 13px;
+}
+.details .left select {
+    font-family: "Source Code Pro";
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: #222;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    padding: 7px;
+}
+.details .left span {
+    font-family: "Source Code Pro";
+    color: #444880;
+    margin: 0 2px;
+}
+.details .right {
+    float: right;
+    width: 50%;
+}
+.details .right label {
+    margin-right: 20px;
+    color: #8F92C3;
+    font-size: 13px;
+}
+.details .right input {
+    text-align: center;
+    width: 50px;
+    font-family: "Source Code Pro";
+    cursor: pointer;
+    background: #222222;
+    border: none;
+    outline: none;
+    color: #fff;
+    padding: 7px;
+}
+.details .right input::-moz-placeholder {
+    font-family: "Source Code Pro";
+    color: #ffffff;
+}
+.details .right input:-ms-input-placeholder {
+    font-family: "Source Code Pro";
+    color: #ffffff;
+}
+.details .right input::placeholder {
+    font-family: "Source Code Pro";
+    color: #ffffff;
+}
+.details .right span {
+    text-align: center;
+    display: inline-block;
+    font-family: "Source Code Pro";
+    cursor: pointer;
+    margin-left: 50px;
+    color: #18C2C0;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #18C2C0;
+    border-radius: 50%;
+}
+.button {
+    text-align: center;
+}
+.button button {
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    width: 382px;
+    height: 56px;
+    background-color: #5ea7ff;
+    border: none;
+    color: #fff;
+    border-radius: 35px;
+    outline: none;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 12.4px 60px 14.8px;
+}
+.button button:hover {
+    background-color: #5ea7ff;
+}
+.button button:active {
+    background-color: #5ea7ff;
+}
+.button button i {
+    font-size: 1.2rem;
+    margin-right: 5px;
+}
+
+.continue_card{
+    background-color: #ff006e !important;
+}
+.add_card{
+    margin-top: 20px;
+    margin: 39.8px 91px 0 20.9px;
+}
+.loader{
+    margin-top: 100px;
+}
+.continue_circle{
+    margin-top: 30px;
+}
+.fake-input { position: relative; }
+.fake-input input { border:none; background:#fff; display:block; width: 100%; box-sizing: border-box }
+.fake-input .amex_card { position: absolute; top: 10px; right: 5px; width: 25px; }
+.fake-input .visa_card { position: absolute; top: 10px; right: 30px; width: 25px; }
+.fake-input .master_card { position: absolute; top: 10px; right: 50px; width: 25px; }
+
+.circle_active_card{
+    background-color: #485abe;
+}
+.circle_card_drop {
+    margin-bottom: 20px;
+}
+.circle_hidden{
+    display: none;
+}
+
+
