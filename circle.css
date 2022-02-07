@@ -7,8 +7,15 @@ h3 {
 .heading{
     color: #ffffff;
     text-align: center;
+    font-weight: bold;
+    font-size: 30px;
 }
-
+.bill_heading{
+    color: #ffffff;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+}
 .saved_card_heading{
     color: #ffffff;
     text-align: left;
@@ -84,10 +91,6 @@ h3 {
 
 * {
     box-sizing: border-box;
-}
-
-html {
-    font-family: "Lato", sans-serif;
 }
 
 .circle_card {
@@ -169,7 +172,6 @@ input[type=radio]:checked ~ .radio::before {
     max-width: 300px;
     width: 300px;
     background-color: #222;
-    font-family: "Source Code Pro";
     border: none;
     outline: none;
     color: white;
@@ -181,7 +183,6 @@ input[type=radio]:checked ~ .radio::before {
     max-width: 100%;
     width: 300px;
     background-color: #222;
-    font-family: "Source Code Pro";
     border: none;
     outline: none;
     color: white;
@@ -198,6 +199,9 @@ input[type=radio]:checked ~ .radio::before {
 .inline_img{
     width: 20px;
 }
+.inline_img_icon{
+    width: 65px;
+}
 .saved_card .card_list{
     white-space:nowrap;
     color: #ffffff;
@@ -212,7 +216,7 @@ input[type=radio]:checked ~ .radio::before {
 }
 .table_cls{
     border-spacing: 0;
-    width: 100%;
+    width: 720px;
 }
 .column_spacing{
     width: 50px;
@@ -234,31 +238,26 @@ input[type=radio]:checked ~ .radio::before {
     width: 12%;
 }
 .cardholder .info input::-moz-placeholder, .number .info input::-moz-placeholder {
-    font-family: "Source Code Pro";
-    color: #ffffff;
+
+    color: #8F92C3;
 }
 .cardholder .info input:-ms-input-placeholder, .number .info input:-ms-input-placeholder {
-    font-family: "Source Code Pro";
-    color: #ffffff;
+    color: #8F92C3;
 }
 .cardholder .info input::placeholder, .number .info input::placeholder {
-    font-family: "Source Code Pro";
-    color: #ffffff;
+    color: #8F92C3;
 }
 
 .savedcardholder .info input::-moz-placeholder, .number .info input::-moz-placeholder {
-    font-family: "Source Code Pro";
-    color: #ffffff;
+    color: #8F92C3;
     font-size: 20px;
 }
 .savedcardholder .info input:-ms-input-placeholder, .number .info input:-ms-input-placeholder {
-    font-family: "Source Code Pro";
-    color: #ffffff;
+    color: #8F92C3;
     font-size: 20px;
 }
 .savedcardholder .info input::placeholder, .number .info input::placeholder {
-    font-family: "Source Code Pro";
-    color: #ffffff;
+    color: #8F92C3;
     font-size: 20px;
 }
 
@@ -292,8 +291,10 @@ input[type=radio]:checked ~ .radio::before {
     margin-right: 20px;
     font-size: 13px;
 }
+.center_align{
+    text-align: center;
+}
 .details .left select {
-    font-family: "Source Code Pro";
     cursor: pointer;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -305,7 +306,6 @@ input[type=radio]:checked ~ .radio::before {
     padding: 7px;
 }
 .details .left span {
-    font-family: "Source Code Pro";
     color: #444880;
     margin: 0 2px;
 }
@@ -321,7 +321,6 @@ input[type=radio]:checked ~ .radio::before {
 .details .right input {
     text-align: center;
     width: 50px;
-    font-family: "Source Code Pro";
     cursor: pointer;
     background: #222222;
     border: none;
@@ -330,21 +329,17 @@ input[type=radio]:checked ~ .radio::before {
     padding: 7px;
 }
 .details .right input::-moz-placeholder {
-    font-family: "Source Code Pro";
-    color: #ffffff;
+    color: #8F92C3;
 }
 .details .right input:-ms-input-placeholder {
-    font-family: "Source Code Pro";
-    color: #ffffff;
+    color: #8F92C3;
 }
 .details .right input::placeholder {
-    font-family: "Source Code Pro";
-    color: #ffffff;
+    color: #8F92C3;
 }
 .details .right span {
     text-align: center;
     display: inline-block;
-    font-family: "Source Code Pro";
     cursor: pointer;
     margin-left: 50px;
     color: #18C2C0;
@@ -409,5 +404,36 @@ input[type=radio]:checked ~ .radio::before {
 .circle_hidden{
     display: none;
 }
-
-
+.saved_card_div {
+    margin-top: 20px;
+    padding-left: 0px;
+}
+.saved_card_headline{
+    padding-left: 0px;
+    font-size: 24px;
+}
+.pay_header{
+    margin-top: 15px;
+}
+.close_btn{
+    float: right;
+    font-size: 20px;
+    cursor: pointer;
+}
+.close_btn_loader{
+    float: right;
+    font-size: 20px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+.loading_header{
+    color: #ffffff;
+    text-align: center;
+}
+.card_rows label {
+    display: inline-block;
+    margin-bottom: 0px;
+}
+.circle_card_row_spacing{
+    height: 16px;
+}

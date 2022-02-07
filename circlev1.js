@@ -5,6 +5,11 @@ var publicKey = ''
 var keyId = ''
 var activecardDetails = {}
 var cardNumber = ''
+let orderProvider = {
+    circleOrderProvider : "MARKETPLACE",
+    orderId: 101
+}
+
 
 
 window.addEventListener('load', function() {
@@ -115,19 +120,26 @@ async function saveUserCard(){
             phoneNumber: document.getElementById("circle_phone").value,
             sessionId: this.create_UUID()
         },
-        description: document.getElementById("circle_description").value
+        description: document.getElementById("circle_description").value,
+        verificationSuccessUrl:"http://crypto-website-qa.s3-website.ap-south-1.amazonaws.com/dashboard",
+        verificationFailureUrl:"http://crypto-website-qa.s3-website.ap-south-1.amazonaws.com/dashboard",
+    }
+    let saveCardDto = {
+        cardPayload: saveCardPayload,
+        orderProvider: orderProvider
     }
     const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'JRX-USER-AUTH-TOKEN':'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJqd3RVc2VyIjoie1wiYXBwSWRcIjpcIm9uam95cmlkZS5zb2xpdGFpcmVcIixcInVzZXJJZFwiOlwiOTIwNTljMmItODQ5NS00MjM0LThlYjQtMDE3ZjdjNDI2NTI1XCJ9IiwiaXNzIjoiYXV0aDAiLCJleHAiOjE2NDg1NDkxMDcsImlhdCI6MTYzMjk5NzEwN30.Tsbzp14PQUACEYQQKTQYA2fViQYDk_lr5zxzpeYlChW0t_H76yCSDUddwFfJkeqg6bOkZE8AEfUEl9HLwMvJBprE4rZAM1S4LW-fi6ZAfj203WrQVssnZD5pG5BldzrlfPd1jaP0stEnn7EQUejWyPhHm5EQVwNj1x_YjaKqXCYXDdQDIpUeG5CsTazW_u5F4sIUw3bwIOjxRT_kffAivs4XXIpwgNdGSeES2-sE1ZEIGMm4pz0P41npM5nKSAhP_cd13ebHVWufHk4K3t-B2bq_ECi2VqAJkJ3IFGnwgGpVUfJ6pYBRUw95OlaPmHKgEPjwNjcJRFNpyLohN3R7kA', 'JRX-APP-ID': 'onjoyride.solitaire' },
-        body: JSON.stringify(saveCardPayload)
+        body: JSON.stringify(saveCardDto)
     };
-    console.log(JSON.stringify(saveCardPayload))
+    console.log(JSON.stringify(saveCardDto))
     fetch(BASE_URL + '/cards/save', requestOptions)
         .then(response => response.json())
         .then(
             (result) => {
-                this.showSuccessUI()
+                console.log(result)
+                fetchPaymentDetailsAndVerify(result.paymentId)
             },
             (error) => {
                 console.log("error")
@@ -148,26 +160,52 @@ function getSuccessUI(){
         '                  <div class="mb-popup-wrapper">\n' +
         '                    <div class="mb-popup-body mb-modal-body">\n' +
         '                      <div class="suc_container">\n' +
-        '                        <div class="loader">\n' +
-        '                          <p class="heading">Payment Sucessfull.</p>\n' +
+        '              <div class="pay_header">\n' +
+        '                <p class="heading"> <span class="close_btn_loader" onclick="closeCirclePopup()">X</span></p>\n' +
+        '              </div>\n' +
+        '                        <br /><div class="loader">\n' +
+        '                          <p class="loading_header">Payment Sucessfull.</p>\n' +
         '                        </div>\n' +
         '                      </div>\n' +
-        '<button class="login-btn theme-btn" onclick="closeCirclePopup()">Close</button>'+
         '                    </div>\n' +
         '                  </div>\n' +
         '      </div>'
     return ui;
+}
+function getFailedUI(){
+    var ui ='<div class="mb-popup-backdrop" id="mbmodal1">\n' +
+        '                  <div class="mb-popup-wrapper">\n' +
+        '                    <div class="mb-popup-body mb-modal-body">\n' +
+        '                      <div class="suc_container">\n' +
+        '              <div class="pay_header">\n' +
+        '                <p class="heading"> <span class="close_btn_loader" onclick="closeCirclePopup()">X</span></p>\n' +
+        '              </div>\n' +
+        '                        <br /><div class="loader">\n' +
+        '                          <p class="loading_header">Payment failed.</p>\n' +
+        '                          <div class="button center_align"><button class="continue_card" type="submit" onclick="openCircleUI()">Try with another card</button></div>\n' +
+        '                        </div>\n' +
+        '                      </div>\n' +
+        '                    </div>\n' +
+        '                  </div>\n' +
+        '      </div>'
+    return ui;
+}
+function showFailedUI(){
+    ui = getFailedUI();
+    document.getElementById("circle_ui").innerHTML = ui;
 }
 function getLoaderUI(){
     var ui ='<div class="mb-popup-backdrop" id="mbmodal1">\n' +
         '                  <div class="mb-popup-wrapper">\n' +
         '                    <div class="mb-popup-body mb-modal-body">\n' +
         '                      <div class="suc_container">\n' +
-        '                        <div class="loader">\n' +
-        '                          <p class="heading">Loading...</p>\n' +
+        '              <div class="pay_header">\n' +
+        '                <p class="heading"> <span class="close_btn_loader" onclick="closeCirclePopup()">X</span></p>\n' +
+        '              </div>\n' +
+        '                        <br /><div class="loader">\n' +
+        '                          <p class="loading_header">Loading saved cards...</p>\n' +
         '                        </div>\n' +
         '                      </div>\n' +
-        '<button class="login-btn theme-btn" onclick="closeCirclePopup()">Close</button>'+
         '                    </div>\n' +
         '                  </div>\n' +
         '      </div>'
@@ -227,20 +265,28 @@ function makePayment(){
             "sessionId": this.create_UUID()
         },
         "autoCapture": true,
-        "verification": "cvv",
+        "verification": "three_d_secure",
+        "verificationSuccessUrl":"http://crypto-website-qa.s3-website.ap-south-1.amazonaws.com/dashboard",
+        "verificationFailureUrl":"http://crypto-website-qa.s3-website.ap-south-1.amazonaws.com/dashboard",
         "encryptedData": activecardDetails.encryptedData,
         "keyId": activecardDetails.keyId
+    }
+    let createCirclePaymentDto = {
+        paymentPayload: paymentPayload,
+        OrderProvider: orderProvider
     }
     const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'JRX-USER-AUTH-TOKEN':'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJqd3RVc2VyIjoie1wiYXBwSWRcIjpcIm9uam95cmlkZS5zb2xpdGFpcmVcIixcInVzZXJJZFwiOlwiOTIwNTljMmItODQ5NS00MjM0LThlYjQtMDE3ZjdjNDI2NTI1XCJ9IiwiaXNzIjoiYXV0aDAiLCJleHAiOjE2NDg1NDkxMDcsImlhdCI6MTYzMjk5NzEwN30.Tsbzp14PQUACEYQQKTQYA2fViQYDk_lr5zxzpeYlChW0t_H76yCSDUddwFfJkeqg6bOkZE8AEfUEl9HLwMvJBprE4rZAM1S4LW-fi6ZAfj203WrQVssnZD5pG5BldzrlfPd1jaP0stEnn7EQUejWyPhHm5EQVwNj1x_YjaKqXCYXDdQDIpUeG5CsTazW_u5F4sIUw3bwIOjxRT_kffAivs4XXIpwgNdGSeES2-sE1ZEIGMm4pz0P41npM5nKSAhP_cd13ebHVWufHk4K3t-B2bq_ECi2VqAJkJ3IFGnwgGpVUfJ6pYBRUw95OlaPmHKgEPjwNjcJRFNpyLohN3R7kA', 'JRX-APP-ID': 'onjoyride.solitaire' },
-        body: JSON.stringify(paymentPayload)
+        body: JSON.stringify(createCirclePaymentDto)
     };
-    console.log(JSON.stringify(paymentPayload))
+    console.log(JSON.stringify(createCirclePaymentDto))
     fetch(BASE_URL + '/payment/create', requestOptions)
         .then(response => response.json())
         .then(
             (result) => {
+                console.log(result)
+                fetchPaymentDetailsAndVerify(result.paymentId)
                 showSuccessUI()
             },
             (error) => {
@@ -248,6 +294,30 @@ function makePayment(){
             }
         )
 }
+
+function fetchPaymentDetailsAndVerify(paymentId){
+    fetch(BASE_URL +"/payment/"+paymentId+"/details", {
+        method: 'GET',
+        headers: {
+            'JRX-APP-ID': 'onjoyride.solitaire',
+            Accept: 'application/json',
+            'JRX-USER-AUTH-TOKEN':'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJqd3RVc2VyIjoie1wiYXBwSWRcIjpcIm9uam95cmlkZS5zb2xpdGFpcmVcIixcInVzZXJJZFwiOlwiOTIwNTljMmItODQ5NS00MjM0LThlYjQtMDE3ZjdjNDI2NTI1XCJ9IiwiaXNzIjoiYXV0aDAiLCJleHAiOjE2NDg1NDkxMDcsImlhdCI6MTYzMjk5NzEwN30.Tsbzp14PQUACEYQQKTQYA2fViQYDk_lr5zxzpeYlChW0t_H76yCSDUddwFfJkeqg6bOkZE8AEfUEl9HLwMvJBprE4rZAM1S4LW-fi6ZAfj203WrQVssnZD5pG5BldzrlfPd1jaP0stEnn7EQUejWyPhHm5EQVwNj1x_YjaKqXCYXDdQDIpUeG5CsTazW_u5F4sIUw3bwIOjxRT_kffAivs4XXIpwgNdGSeES2-sE1ZEIGMm4pz0P41npM5nKSAhP_cd13ebHVWufHk4K3t-B2bq_ECi2VqAJkJ3IFGnwgGpVUfJ6pYBRUw95OlaPmHKgEPjwNjcJRFNpyLohN3R7kA'
+        },})
+        .then(res => res.json())
+        .then(
+            (result) => {
+                console.log(result)
+                if(result.status == "failed"){
+                    showFailedUI();
+                }
+                redirectUrl = result.requiredAction.redirectUrl
+                window.location.href = redirectUrl
+            },
+            (error) => {
+            }
+        )
+}
+
 function getSavedCardListUI(savedCardList){
     var cardList = ''
     savedCardList.forEach((item,index)=>{
@@ -255,18 +325,18 @@ function getSavedCardListUI(savedCardList){
         var space_id_div = "space_" + item.cardId
         var card_id_div = "card_" + item.cardId
         var card_icon = BASE_IMG_URL + '/' + item.network.toLowerCase() + '.png'
-        cardList += '<tr key='+space_id_div+'>\n' +
-            '                <td>&nbsp; </td>\n' +
+        cardList += '<tr key='+space_id_div+' class="circle_card_row_spacing">\n' +
+            '                <td cellspacing="0" cellpadding="0">&nbsp; </td>\n' +
             '                <td>&nbsp;</td>\n' +
             '                <td>&nbsp;</td>\n' +
             '                <td>&nbsp;</td>\n' +
             '            </tr>'
 
         cardList += '<tr class="card_rows" key='+card_id_div+'  id="'+card_id_div+'" data-value1='+item.cardId+' onClick="selectSavedCard(&#34;'+item.cardId+'&#34;)">\n' +
-            '                <td class="first_column row_padding circle_round"><input class="circle_checkbox" type="checkbox" id="checkbox_'+card_id_div+'"><label for="checkbox_'+card_id_div+'"> <img src="'+card_icon+'"  class="inline_img"/> &ensp; Visa Credit Card ending with '+item.last4+'</label></td>\n' +
+            '                <td class="first_column row_padding circle_round"><input class="circle_checkbox" type="checkbox" id="checkbox_'+card_id_div+'"><label for="checkbox_'+card_id_div+'"> &nbsp;&nbsp; <img src="'+card_icon+'"  class="inline_img_icon"/> &ensp; '+item.network+' '+item.fundingType+' Card ending with '+item.last4+'</label></td>\n' +
             '                <td class="second_column column_spacing">&nbsp;</td>\n' +
             '                <td class="third_column">'+item.expMonth+'/'+item.expYear+'</td>\n' +
-            '                <td class="fourth_column column_spacing">&nbsp;<img src="'+BASE_IMG_URL+'/dropdown.png"  class="inline_img circle_card_drop"/></td>\n' +
+            '                <td class="fourth_column">&nbsp;<img src="'+BASE_IMG_URL+'/dropdown.png"  class="inline_img"/></td>\n' +
             '            </tr>'
 
     })
@@ -275,24 +345,24 @@ function getSavedCardListUI(savedCardList){
         '        <div class="mb-popup-wrapper">\n' +
         '          <div class="mb-popup-body mb-modal-body">\n' +
         '            <div class="container">\n' +
-        '              <div class="price">\n' +
-        '                <p class="heading">Pay with card</p>\n' +
+        '              <div class="pay_header">\n' +
+        '                <p class="heading">Pay with card <span class="close_btn" onclick="closeCirclePopup()">X</span></p>\n' +
         '              </div>\n' +
         '              <div class="card__container">\n' +
         '                <div class="saved_card">\n' +
         '                  <div class="row savedcardholder">\n' +
         '                    <div class="info">\n' +
         '                      <label htmlFor="amount">Amount</label><br/>\n' +
-        '                      <input placeholder="e.g. 7000" id="amount" type="text"/>\n' +
+        '                      <input placeholder="7000" id="amount" type="text" readonly/>\n' +
         '                    </div>\n' +
         '                  </div>\n' +
         '\n' +
         '                  <div class="row savedcardholder">\n' +
-        '                    <div class="card_info">\n' +
+        '                    <div class="card_info saved_card_div">\n' +
         '                      <table class="table_cls">\n' +
         '                        <tbody>\n' +
         '                        <tr class="card_info">\n' +
-        '                          <th class="first_column row_padding">Your saved credit and debit cards</th>\n' +
+        '                          <th class="first_column row_padding saved_card_headline">Your saved credit and debit cards</th>\n' +
         '                          <th class="second_column column_spacing">&nbsp;</th>\n' +
         '                          <th class="third_column">Expires</th>\n' +
         '                        </tr>\n' + cardList +
@@ -333,7 +403,7 @@ function getNewCardForm(){
         '                    <div class="mb-popup-body mb-modal-body">\n' +
         '                    <div class="container">\n' +
         '                  <div class="price">\n' +
-        '                    <p class="heading">Pay with card</p>\n' +
+        '                    <p class="heading">Pay with card <span class="close_btn" onclick="closeCirclePopup()">x</span></p>\n' +
         '                  </div>\n' +
         '                  <div class="card__container">\n' +
         '                    <div class="circle_card">\n' +
@@ -341,7 +411,7 @@ function getNewCardForm(){
         '                      <div class="row cardholder">\n' +
         '                        <div class="info">\n' +
         '                          <label htmlFor="amount">Amount</label><br />\n' +
-        '                          <input placeholder="e.g. 7000" id="amount" type="text"/>\n' +
+        '                          <input placeholder="7000" id="amount" type="text" readonly/>\n' +
         '                        </div>\n' +
         '                      </div>\n' +
         '                      <div class="row number circle_top">\n' +
@@ -402,7 +472,7 @@ function getNewCardForm(){
         '                      </div>\n' +
         '                    </div>\n' +
         '                    <div class="circle_card card_right">\n' +
-        '                      <p class="heading">Billing Details</p>\n' +
+        '                      <p class="bill_heading">Billing Details</p>\n' +
         '                      <div class="row cardholder">\n' +
         '                        <div class="info">\n' +
         '                          <input placeholder="Cardholder name" id="circle_cardholder" type="text" />\n' +
@@ -473,7 +543,7 @@ function getSavedCardForm(cardNumber, activecardDetails){
         '                    <div class="mb-popup-body mb-modal-body">\n' +
         '                    <div class="container">\n' +
         '                  <div class="price">\n' +
-        '                    <p class="heading">Pay with card</p>\n' +
+        '                    <p class="heading">Pay with card <span class="close_btn" onclick="closeCirclePopup()">X</span></p>\n' +
         '                  </div>\n' +
         '                  <div class="card__container">\n' +
         '                    <div class="circle_card">\n' +
@@ -481,7 +551,7 @@ function getSavedCardForm(cardNumber, activecardDetails){
         '                      <div class="row cardholder">\n' +
         '                        <div class="info">\n' +
         '                          <label htmlFor="amount">Amount</label><br />\n' +
-        '                          <input placeholder="e.g. 7000" id="amount" type="text"/>\n' +
+        '                          <input placeholder="7000" id="amount" type="text" readonly/>\n' +
         '                        </div>\n' +
         '                      </div>\n' +
         '                      <div class="row number circle_top">\n' +
@@ -529,12 +599,11 @@ function getSavedCardForm(cardNumber, activecardDetails){
         '                        <div class="right">\n' +
         '                          <label htmlFor="circle_card_cvv">CVV</label><br />\n' +
         '                          <input type="text" maxLength="4" id="circle_card_cvv" placeholder="123" />\n' +
-        '                          <span data-balloon-length="medium" data-balloon="The 3 or 4-digit number on the back of your card."\n' +
-        '                                data-balloon-pos="up">i</span>\n' +
+      '<span className="material-icons-outlined tooltip-state-hover"> i</span>\n' +
         '                        </div>\n' +
         '                      </div>\n' +
         '                      <div class="row number circle_top">\n' +
-        '                        <div class="info">\n' +
+        '                        <div class="info phone-no-top">\n' +
         '                          <label htmlFor="circle_description">Description</label><br />\n' +
         '                          <input id="circle_description" type="text" pattern="" maxLength="100"\n' +
         '                                 placeholder="NFT purchase" value="'+activecardDetails.description+'"/>\n' +
@@ -542,7 +611,7 @@ function getSavedCardForm(cardNumber, activecardDetails){
         '                      </div>\n' +
         '                    </div>\n' +
         '                    <div class="circle_card card_right">\n' +
-        '                      <p class="heading">Billing Details</p>\n' +
+        '                      <p class="bill_heading">Billing Details</p>\n' +
         '                      <div class="row cardholder">\n' +
         '                        <div class="info">\n' +
         '                          <input placeholder="Cardholder name" id="circle_cardholder" type="text" value="'+activecardDetails.name+'"/>\n' +
