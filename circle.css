@@ -16,9 +16,22 @@ h3 {
     font-weight: bold;
     font-size: 16px;
 }
+.bold_font{
+    font-weight: bold;
+}
 .saved_card_heading{
     color: #ffffff;
     text-align: left;
+}
+.suc_messages{
+    text-align: center;
+}
+.suc_icon{
+    width: 50px;
+}
+.suc_btn{
+    background-color: #fff !important;
+    color: #ff006e !important;
 }
 
 .mb-modal-body					{border-radius: 4px 4px 0px 0px;font-size: 18px;  padding-bottom:10px;}
@@ -85,7 +98,7 @@ h3 {
     padding-left: 50px;
     align-items: center;
     justify-content: center;
-    height: 30vh;
+    height: 42vh;
     flex-direction: column;
 }
 
@@ -225,7 +238,7 @@ input[type=radio]:checked ~ .radio::before {
     padding: 10px;
 }
 .first_column{
-    width: 65%;
+    width: 70%;
     text-align: left;
 }
 .second_column{
@@ -381,7 +394,7 @@ input[type=radio]:checked ~ .radio::before {
 }
 .add_card{
     margin-top: 20px;
-    margin: 39.8px 91px 0 20.9px;
+    margin: 35px 91px 0 0;
 }
 .loader{
     margin-top: 100px;
@@ -400,6 +413,9 @@ input[type=radio]:checked ~ .radio::before {
 }
 .circle_card_drop {
     margin-bottom: 20px;
+}
+.no_left_padding{
+    padding-left: 0px;
 }
 .circle_hidden{
     display: none;

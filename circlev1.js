@@ -5,17 +5,36 @@ var publicKey = ''
 var keyId = ''
 var activecardDetails = {}
 var cardNumber = ''
+var order_amount = '$70'
 let orderProvider = {
-    circleOrderProvider : "MARKETPLACE",
-    orderId: 101
+    orderProviderPlatform : "MARKETPLACE",
+    orderId: 100 // TODO - get the orderId from marketplace api
+}
+var userId = "92059c2b-8495-4234-8eb4-017f7c426525"
+const params = new URLSearchParams(window.location.search)
+
+
+
+if(params.has('circle-payment-status')){
+    console.log("sahi hai")
+    if(params.get("circle-payment-status") === 'success'){
+        console.log("success");
+        console.log(params.get("paymentId"))
+        if(params.has('paymentId')) {
+            verifyPaymentId(userId, params.get("paymentId"),0);
+            // showSuccessUI(params.get("paymentId"));
+        } else {
+            showFailedUI();
+        }
+    } else if(params.get("circle-payment-status") === 'failed'){
+        showFailedUI();
+    }
 }
 
-
-
-window.addEventListener('load', function() {
+document.addEventListener('readystatechange', function() {
     console.log("on load event fire")
-    var userId = "92059c2b-8495-4234-8eb4-017f7c426525"
-    getSavedCreditCards(userId)
+    var userId = "92059c2b-8495-4234-8eb4-017f7c426525" // ToDo - get userId from local storage
+    // getSavedCreditCards(userId)
     getpublicKey()
 })
 
@@ -44,10 +63,11 @@ async function getSavedCreditCards(userId){
         .then(
             (result) => {
         // The API call was successful!
+                console.log(result)
         savedCardList = result
         console.log('success!', savedCardList);
                 var ui = '';
-                if(savedCardList.length === 0){
+                if(savedCardList !== null && savedCardList.length === 0){
                     ui = getNewCardForm();
                 } else {
                     ui = getSavedCardListUI(savedCardList);
@@ -121,8 +141,8 @@ async function saveUserCard(){
             sessionId: this.create_UUID()
         },
         description: document.getElementById("circle_description").value,
-        verificationSuccessUrl:"http://crypto-website-qa.s3-website.ap-south-1.amazonaws.com/dashboard",
-        verificationFailureUrl:"http://crypto-website-qa.s3-website.ap-south-1.amazonaws.com/dashboard",
+        verificationSuccessUrl:"http://crypto-website-qa.s3-website.ap-south-1.amazonaws.com/dashboard/collectibles/?circle-payment-status=success",
+        verificationFailureUrl:"http://crypto-website-qa.s3-website.ap-south-1.amazonaws.com/dashboard/collectibles/?circle-payment-status=failed",
     }
     let saveCardDto = {
         cardPayload: saveCardPayload,
@@ -139,23 +159,28 @@ async function saveUserCard(){
         .then(
             (result) => {
                 console.log(result)
-                fetchPaymentDetailsAndVerify(result.paymentId)
+                if(result.paymentId) {
+                    fetchPaymentDetailsAndVerify(result.paymentId, 0)
+                } else {
+                    showFailedUI()
+                }
             },
             (error) => {
+                showFailedUI()
                 console.log("error")
             }
         )
 }
 
-function  showSuccessUI(){
-    var ui = getSuccessUI()
+function  showSuccessUI(paymentId){
+    var ui = getSuccessUI(paymentId)
     document.getElementById("circle_ui").innerHTML = ui;
 }
 function closeCirclePopup(){
     var ui = ''
     document.getElementById("circle_ui").innerHTML = ui;
 }
-function getSuccessUI(){
+function getSuccessUI(paymentId){
     var ui ='<div class="mb-popup-backdrop" id="mbmodal1">\n' +
         '                  <div class="mb-popup-wrapper">\n' +
         '                    <div class="mb-popup-body mb-modal-body">\n' +
@@ -163,8 +188,11 @@ function getSuccessUI(){
         '              <div class="pay_header">\n' +
         '                <p class="heading"> <span class="close_btn_loader" onclick="closeCirclePopup()">X</span></p>\n' +
         '              </div>\n' +
-        '                        <br /><div class="loader">\n' +
-        '                          <p class="loading_header">Payment Sucessfull.</p>\n' +
+        '                        <br /><div class="suc_messages">\n' +
+        '<img src="https://facthunt-test.s3.ap-south-1.amazonaws.com/images/checked.png" alt="success" class="suc_icon"/><br /><br />'+
+        '                          <p class="loading_header">Congratulations, Your NFT is deposited in joyride wallet.</p> <br />\n' +
+        '                          <p class="loading_header">Transaction Id: '+paymentId+'</p> <br />\n' +
+        '                          <div class="button center_align"><button class="suc_btn" type="submit" onclick="closeCirclePopup()">Proceed to your Collectibles</button></div>\n' +
         '                        </div>\n' +
         '                      </div>\n' +
         '                    </div>\n' +
@@ -225,9 +253,24 @@ function addNewCard(){
     document.getElementById("circle_ui").innerHTML = ui;
 }
 function selectSavedCard(card_id){
+    if (document.getElementById('continue_card_button')){
+        var input = document.getElementById('continue_card_button');
+        var old_card_id = input.dataset.value1
+        console.log(old_card_id)
+        document.getElementById("circle_saved_card_continue").innerHTML = ''
+        if(old_card_id !==  card_id) {
+            let element1 = document.getElementById("card_" + old_card_id);
+            element1.classList.toggle('circle_active_card');
+            toggleAndAddContinueButton(card_id)
+        }
+    } else {
+        toggleAndAddContinueButton(card_id)
+    }
+}
+function toggleAndAddContinueButton(card_id){
     let element = document.getElementById("card_" + card_id);
     element.classList.toggle('circle_active_card');
-    var ui =   '<button class="continue_card" type="submit" onClick="useSavedCard(&#34;'+card_id+'&#34;)"><i class="ion-locked"></i> Continue\n' +
+    var ui = '<button class="continue_card" type="submit" id="continue_card_button" data-value1="' + card_id + '" onClick="useSavedCard(&#34;' + card_id + '&#34;)"><i class="ion-locked"></i> Continue\n' +
         '</button>\n'
     document.getElementById("circle_saved_card_continue").innerHTML = ui;
 }
@@ -266,8 +309,8 @@ function makePayment(){
         },
         "autoCapture": true,
         "verification": "three_d_secure",
-        "verificationSuccessUrl":"http://crypto-website-qa.s3-website.ap-south-1.amazonaws.com/dashboard",
-        "verificationFailureUrl":"http://crypto-website-qa.s3-website.ap-south-1.amazonaws.com/dashboard",
+        "verificationSuccessUrl":"http://crypto-website-qa.s3-website.ap-south-1.amazonaws.com/dashboard/collectibles/?circle-payment-status=success",
+        "verificationFailureUrl":"http://crypto-website-qa.s3-website.ap-south-1.amazonaws.com/dashboard/collectibles/?circle-payment-status=failed",
         "encryptedData": activecardDetails.encryptedData,
         "keyId": activecardDetails.keyId
     }
@@ -286,16 +329,55 @@ function makePayment(){
         .then(
             (result) => {
                 console.log(result)
-                fetchPaymentDetailsAndVerify(result.paymentId)
-                showSuccessUI()
+                fetchPaymentDetailsAndVerify(result.paymentId, 0)
             },
             (error) => {
                 console.log("error")
+                showFailedUI();
             }
         )
 }
-
-function fetchPaymentDetailsAndVerify(paymentId){
+const sleep = (seconds) => {
+    const waitUntil = new Date().getTime() + seconds * 1000
+    while(new Date().getTime() < waitUntil) {
+        // do nothing
+    }
+}
+function verifyPaymentId(userId, paymentId, retry_count) { //method is called on call back url
+    fetch(BASE_URL +"/"+userId+"/payment/"+paymentId+"/verify", {
+        method: 'GET',
+        headers: {
+            'JRX-APP-ID': 'onjoyride.solitaire',
+            Accept: 'application/json',
+            'JRX-USER-AUTH-TOKEN':'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJqd3RVc2VyIjoie1wiYXBwSWRcIjpcIm9uam95cmlkZS5zb2xpdGFpcmVcIixcInVzZXJJZFwiOlwiOTIwNTljMmItODQ5NS00MjM0LThlYjQtMDE3ZjdjNDI2NTI1XCJ9IiwiaXNzIjoiYXV0aDAiLCJleHAiOjE2NDg1NDkxMDcsImlhdCI6MTYzMjk5NzEwN30.Tsbzp14PQUACEYQQKTQYA2fViQYDk_lr5zxzpeYlChW0t_H76yCSDUddwFfJkeqg6bOkZE8AEfUEl9HLwMvJBprE4rZAM1S4LW-fi6ZAfj203WrQVssnZD5pG5BldzrlfPd1jaP0stEnn7EQUejWyPhHm5EQVwNj1x_YjaKqXCYXDdQDIpUeG5CsTazW_u5F4sIUw3bwIOjxRT_kffAivs4XXIpwgNdGSeES2-sE1ZEIGMm4pz0P41npM5nKSAhP_cd13ebHVWufHk4K3t-B2bq_ECi2VqAJkJ3IFGnwgGpVUfJ6pYBRUw95OlaPmHKgEPjwNjcJRFNpyLohN3R7kA'
+        },})
+        .then(res => res.json())
+        .then(
+            (result) => {
+                console.log(result)
+                if(result === null){
+                    showFailedUI();
+                } else if(result.status === "pending" && retry_count < 3){
+                    sleep(5)
+                    verifyPaymentId(userId, paymentId, retry_count + 1)
+                } else if(retry_count >= 3){
+                    showFailedUI();
+                } else if(result.status === "confirmed" || result.status === "success" || result.status === "paid") {
+                    showSuccessUI(paymentId)
+                } else {
+                    showFailedUI();
+                }
+            },
+            (error) => {
+                if(retry_count < 3){
+                    verifyPaymentId(userId, paymentId, retry_count + 1)
+                } else {
+                    showFailedUI();
+                }
+            }
+        )
+}
+function fetchPaymentDetailsAndVerify(paymentId, retry_count){
     fetch(BASE_URL +"/payment/"+paymentId+"/details", {
         method: 'GET',
         headers: {
@@ -307,13 +389,22 @@ function fetchPaymentDetailsAndVerify(paymentId){
         .then(
             (result) => {
                 console.log(result)
-                if(result.status == "failed"){
+                if(result.status === "failed"){
+                    showFailedUI();
+                } else if(result.status === "pending" && retry_count < 3){
+                    sleep(5)
+                    fetchPaymentDetailsAndVerify(paymentId, retry_count + 1)
+                } else if(retry_count >= 3){
+                    showFailedUI();
+                } else if(result.requiredAction && result.requiredAction.redirectUrl) {
+                    redirectUrl = result.requiredAction.redirectUrl
+                    window.location.href = redirectUrl
+                } else {
                     showFailedUI();
                 }
-                redirectUrl = result.requiredAction.redirectUrl
-                window.location.href = redirectUrl
             },
             (error) => {
+                showFailedUI();
             }
         )
 }
@@ -326,14 +417,14 @@ function getSavedCardListUI(savedCardList){
         var card_id_div = "card_" + item.cardId
         var card_icon = BASE_IMG_URL + '/' + item.network.toLowerCase() + '.png'
         cardList += '<tr key='+space_id_div+' class="circle_card_row_spacing">\n' +
-            '                <td cellspacing="0" cellpadding="0">&nbsp; </td>\n' +
-            '                <td>&nbsp;</td>\n' +
-            '                <td>&nbsp;</td>\n' +
-            '                <td>&nbsp;</td>\n' +
+            '                <td cellspacing="0" cellpadding="0"> </td>\n' +
+            '                <td cellspacing="0" cellpadding="0"></td>\n' +
+            '                <td cellspacing="0" cellpadding="0"></td>\n' +
+            '                <td cellspacing="0" cellpadding="0"></td>\n' +
             '            </tr>'
 
-        cardList += '<tr class="card_rows" key='+card_id_div+'  id="'+card_id_div+'" data-value1='+item.cardId+' onClick="selectSavedCard(&#34;'+item.cardId+'&#34;)">\n' +
-            '                <td class="first_column row_padding circle_round"><input class="circle_checkbox" type="checkbox" id="checkbox_'+card_id_div+'"><label for="checkbox_'+card_id_div+'"> &nbsp;&nbsp; <img src="'+card_icon+'"  class="inline_img_icon"/> &ensp; '+item.network+' '+item.fundingType+' Card ending with '+item.last4+'</label></td>\n' +
+        cardList += '<tr onClick="selectSavedCard(&#34;'+item.cardId+'&#34;)" class="card_rows" key='+card_id_div+'  id="'+card_id_div+'" data-value1='+item.cardId+'>\n' +
+            '                <td class="first_column row_padding circle_round"><input class="circle_checkbox" type="radio" id="checkbox_'+card_id_div+'"><label for="checkbox_'+card_id_div+'" onClick="selectSavedCard(&#34;'+item.cardId+'&#34;)"> &nbsp;&nbsp; <img src="'+card_icon+'"  class="inline_img_icon"/> &ensp; '+item.network+' '+item.fundingType+' Card ending with '+item.last4+'</label></td>\n' +
             '                <td class="second_column column_spacing">&nbsp;</td>\n' +
             '                <td class="third_column">'+item.expMonth+'/'+item.expYear+'</td>\n' +
             '                <td class="fourth_column">&nbsp;<img src="'+BASE_IMG_URL+'/dropdown.png"  class="inline_img"/></td>\n' +
@@ -353,7 +444,7 @@ function getSavedCardListUI(savedCardList){
         '                  <div class="row savedcardholder">\n' +
         '                    <div class="info">\n' +
         '                      <label htmlFor="amount">Amount</label><br/>\n' +
-        '                      <input placeholder="7000" id="amount" type="text" readonly/>\n' +
+        '                      <input placeholder="7000" class="center_align bold_font" id="amount" type="text" value="'+order_amount+'" readonly />\n' +
         '                    </div>\n' +
         '                  </div>\n' +
         '\n' +
@@ -367,7 +458,7 @@ function getSavedCardListUI(savedCardList){
         '                          <th class="third_column">Expires</th>\n' +
         '                        </tr>\n' + cardList +
         '                        <tr class="card_info">\n' +
-        '                          <td class="first_column row_padding">\n' +
+        '                          <td class="first_column row_padding no_left_padding">\n' +
         '                            <div class="button ">\n' +
         '                              <button class="add_card" type="submit" onClick="addNewCard()"><i class="ion-locked"></i> Add a credit or debit card\n' +
         '                              </button>\n' +
